@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+</head>
+
+<body>
+    <canvas id='strings' width='650px' height='650px'></canvas>
+
+    <script>
+        var canvas = document.getElementById('strings');
+        var context = canvas.getContext('2d');
+        context.font = '8pt Sans-Serif';
+        context.textAlign = 'center';
+
+        var CENTER_X = canvas.width/2;
+        var CENTER_Y = canvas.height/2;
+        var RADIUS = Math.min(canvas.width, canvas.height)/2 - 25;
+
+        var multFactor = 25;
+        var numDots = 20;
+
+        function drawCircle() {
+            context.beginPath();
+            context.arc(CENTER_X, CENTER_Y, RADIUS, 0, 2 * Math.PI);
+            context.strokeStyle = '#0000ff';
+            context.stroke();
+        }
+
+        function drawDots() {
+            var angleIncrement = 2 * Math.PI / numDots;
+            context.fillStyle = '#000000';
+
+            for (index = 0; index < numDots; ++index) {
+                var x = RADIUS * Math.cos(2 * Math.PI - angleIncrement * index);
+                var y = RADIUS * Math.sin(2 * Math.PI - angleIncrement * index);
+
+                context.beginPath();
+                context.arc(x + CENTER_X, y + CENTER_Y, 5, 0, 2 * Math.PI);
+                context.fill();
+                context.fillText(index, x * 1.05 + CENTER_X, y * 1.05 + CENTER_Y);
+            }
+        }
+
+        function drawStrings() {
+            var angleIncrement = 2 * Math.PI / numDots;
+
+            context.beginPath();
+            for (index = 0; index < numDots; ++index) {
+                var x = RADIUS * Math.cos(2 * Math.PI - angleIncrement * index) + CENTER_X;
+                var y = RADIUS * Math.sin(2 * Math.PI - angleIncrement * index) + CENTER_Y;
+
+                var newIndex = index * multFactor;
+                while (newIndex >= numDots) {
+                    newIndex -= numDots;
+                }
+                var newX = RADIUS * Math.cos(2 * Math.PI - angleIncrement * newIndex) + CENTER_X;
+                var newY = RADIUS * Math.sin(2 * Math.PI - angleIncrement * newIndex) + CENTER_Y;
+
+                context.moveTo(x, y);
+                context.lineTo(newX, newY);
+            }
+            context.strokeStyle = '#0000ff';
+            context.stroke();
+        }
+
+        function updateStrings() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawCircle();
+            drawDots();
+            drawStrings();
+            multFactor += 0.01;
+        }
+
+        window.setInterval(updateStrings, 250);
+    </script>
+</body>
+
+</html>
