@@ -7,6 +7,20 @@
 
 <body>
     <canvas id='strings' width='650px' height='650px'></canvas>
+    <div style="float: right">
+        <div>
+            <label for='numDots'>Number of Dots</label>
+            <input type='number' id='numDots'>
+            <label for='numDotChange'>Change By</label>
+            <input type='number' id='numDotChange'>
+        </div>
+        <div>
+            <label for='multFactor'>Multiplication Factor</label>
+            <input type='number' id='multFactor'>
+            <label for='multFactorChange'>Change By</label>
+            <input type='number' id='multFactorChange'>
+        </div>
+    </div>
 
     <script>
         var canvas = document.getElementById('strings');
@@ -14,12 +28,16 @@
         context.font = '8pt Sans-Serif';
         context.textAlign = 'center';
 
+        var isDrawn = false;
+
         var CENTER_X = canvas.width/2;
         var CENTER_Y = canvas.height/2;
         var RADIUS = Math.min(canvas.width, canvas.height)/2 - 25;
 
-        var multFactor = 25;
-        var numDots = 20;
+        document.getElementById('multFactor').value = 2;
+        document.getElementById('multFactorChange').value = 0;
+        document.getElementById('numDots').value = 20;
+        document.getElementById('numDotChange').value = 0;
 
         function drawCircle() {
             context.beginPath();
@@ -29,6 +47,7 @@
         }
 
         function drawDots() {
+            var numDots = parseInt(document.getElementById('numDots').value);
             var angleIncrement = 2 * Math.PI / numDots;
             context.fillStyle = '#000000';
 
@@ -44,6 +63,7 @@
         }
 
         function drawStrings() {
+            var numDots = parseInt(document.getElementById('numDots').value);
             var angleIncrement = 2 * Math.PI / numDots;
 
             context.beginPath();
@@ -51,7 +71,7 @@
                 var x = RADIUS * Math.cos(2 * Math.PI - angleIncrement * index) + CENTER_X;
                 var y = RADIUS * Math.sin(2 * Math.PI - angleIncrement * index) + CENTER_Y;
 
-                var newIndex = index * multFactor;
+                var newIndex = index * parseFloat(document.getElementById('multFactor').value);
                 while (newIndex >= numDots) {
                     newIndex -= numDots;
                 }
@@ -66,11 +86,27 @@
         }
 
         function updateStrings() {
+            var multFactorChange = parseFloat(document.getElementById('multFactorChange').value);
+            var numDotChange = parseInt(document.getElementById('numDotChange').value);
+            if (isNaN(multFactorChange) || isNaN(numDotChange) ||
+                (multFactorChange == 0 && numDotChange == 0 && isDrawn)) {
+                // nothing to do
+                return;
+            }
+
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawCircle();
             drawDots();
             drawStrings();
-            multFactor += 0.01;
+            isDrawn = true;
+
+            var multFactor = parseFloat(document.getElementById('multFactor').value);
+            multFactor += multFactorChange;
+            document.getElementById('multFactor').value = multFactor;
+
+            var numDots = parseInt(document.getElementById('numDots').value);
+            numDots += numDotChange;
+            document.getElementById('numDots').value = numDots;
         }
 
         window.setInterval(updateStrings, 250);
