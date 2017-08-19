@@ -28,16 +28,43 @@
         context.font = '8pt Sans-Serif';
         context.textAlign = 'center';
 
-        var isDrawn = false;
 
         var CENTER_X = canvas.width/2;
         var CENTER_Y = canvas.height/2;
         var RADIUS = Math.min(canvas.width, canvas.height)/2 - 25;
 
-        document.getElementById('multFactor').value = 2;
-        document.getElementById('multFactorChange').value = 0;
-        document.getElementById('numDots').value = 20;
-        document.getElementById('numDotChange').value = 0;
+        var settings = {
+            multFactor: 2,
+            multFactorChange: 0,
+            numDots: 20,
+            numDotChange: 0,
+        }
+        document.getElementById('multFactor').value = settings.multFactor;
+        document.getElementById('multFactorChange').value = settings.multFactorChange;
+        document.getElementById('numDots').value = settings.numDots;
+        document.getElementById('numDotChange').value = settings.numDotChange;
+
+        // Change the values of elements only when the input box loses focus
+        for (setting in settings) {
+            document.getElementById(setting).addEventListener(
+                'blur',
+                function() {
+                    var setting = this.id;
+                    var newValue = this.value;
+
+                    if (setting.substring(0, 6) == 'numDot') {
+                        newValue = parseInt(newValue);
+                    }
+                    else {
+                        newValue = parseFloat(newValue);
+                    }
+
+                    if (newValue != NaN) {
+                        settings[setting] = newValue;
+                    }
+                }
+            );
+        }
 
         function drawCircle() {
             context.beginPath();
@@ -47,7 +74,7 @@
         }
 
         function drawDots() {
-            var numDots = parseInt(document.getElementById('numDots').value);
+            var numDots = settings.numDots;
             var angleIncrement = 2 * Math.PI / numDots;
             context.fillStyle = '#000000';
 
@@ -63,7 +90,7 @@
         }
 
         function drawStrings() {
-            var numDots = parseInt(document.getElementById('numDots').value);
+            var numDots = settings.numDots;
             var angleIncrement = 2 * Math.PI / numDots;
 
             context.beginPath();
@@ -71,7 +98,7 @@
                 var x = RADIUS * Math.cos(2 * Math.PI - angleIncrement * index) + CENTER_X;
                 var y = RADIUS * Math.sin(2 * Math.PI - angleIncrement * index) + CENTER_Y;
 
-                var newIndex = index * parseFloat(document.getElementById('multFactor').value);
+                var newIndex = index * settings.multFactor;
                 while (newIndex >= numDots) {
                     newIndex -= numDots;
                 }
@@ -85,30 +112,29 @@
             context.stroke();
         }
 
-        function updateStrings() {
-            var multFactorChange = parseFloat(document.getElementById('multFactorChange').value);
-            var numDotChange = parseInt(document.getElementById('numDotChange').value);
-            if (isNaN(multFactorChange) || isNaN(numDotChange) ||
-                (multFactorChange == 0 && numDotChange == 0 && isDrawn)) {
-                // nothing to do
-                return;
-            }
-
+        function drawAll() {
             context.clearRect(0, 0, canvas.width, canvas.height);
             drawCircle();
             drawDots();
             drawStrings();
-            isDrawn = true;
-
-            var multFactor = parseFloat(document.getElementById('multFactor').value);
-            multFactor += multFactorChange;
-            document.getElementById('multFactor').value = multFactor;
-
-            var numDots = parseInt(document.getElementById('numDots').value);
-            numDots += numDotChange;
-            document.getElementById('numDots').value = numDots;
         }
 
+        function updateStrings() {
+            if (settings.multFactorChange == 0 && settings.numDotChange == 0) {
+                // nothing to do
+                return;
+            }
+
+            drawAll();
+
+            settings.multFactor += settings.multFactorChange;
+            document.getElementById('multFactor').value = settings.multFactor;
+
+            settings.numDots += settings.numDotChange;
+            document.getElementById('numDots').value = settings.numDots;
+        }
+
+        drawAll();
         window.setInterval(updateStrings, 250);
     </script>
 </body>
