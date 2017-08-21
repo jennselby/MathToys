@@ -46,27 +46,8 @@
 
         var numbers = [[1],[1,1]];
 
-        document.getElementById('modulus').value = settings.modulus;
-        document.getElementById('modulusChange').value = settings.modulusChange;
-
         function restrictModulus(modulus) {
             return Math.max(2, Math.min(modulus, COLORS.length));
-        }
-
-        // Change the values of elements only when the input box loses focus
-        for (setting in settings) {
-            document.getElementById(setting).addEventListener(
-                'blur',
-                function() {
-                    var setting = this.id;
-                    var newValue = parseInt(this.value);
-                    if (newValue != NaN) {
-                        settings[setting] = newValue;
-                        settings.modulus = restrictModulus(settings.modulus);
-                        drawAll();
-                    }
-                }
-            );
         }
 
         function findNumbers() {
@@ -136,6 +117,25 @@
             document.getElementById('modulus').value = settings.modulus;
 
             drawAll();
+        }
+
+        document.getElementById('modulus').value = settings.modulus;
+        document.getElementById('modulusChange').value = settings.modulusChange;
+
+        // update settings when the values change
+        for (setting in settings) {
+            document.getElementById(setting).addEventListener(
+                'change',
+                function() {
+                    var setting = this.id;
+                    var newValue = parseInt(this.value);
+                    if (newValue != NaN) {
+                        settings[setting] = newValue;
+                        settings.modulus = restrictModulus(settings.modulus);
+                        drawAll();
+                    }
+                }
+            );
         }
 
         findNumbers();
