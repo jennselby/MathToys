@@ -20,6 +20,10 @@
             <label for='multFactorChange'>Change By</label>
             <input type='number' id='multFactorChange'>
         </div>
+        <div>
+            <input type='button' id='startPause' value='Start'>
+            <input type='button' id='reset' value='Reset'>
+        </div>
     </div>
 
     <script>
@@ -33,38 +37,38 @@
         var CENTER_Y = canvas.height/2;
         var RADIUS = Math.min(canvas.width, canvas.height)/2 - 25;
 
-        var settings = {
-            multFactor: 2,
-            multFactorChange: 0,
-            numDots: 20,
-            numDotChange: 0,
+        var timerId;
+
+        function resetSettings () {
+            settings = {
+                multFactor: 2,
+                multFactorChange: 0,
+                numDots: 20,
+                numDotChange: 0,
+            };
+            document.getElementById('multFactor').value = settings.multFactor;
+            document.getElementById('multFactorChange').value = settings.multFactorChange;
+            document.getElementById('numDots').value = settings.numDots;
+            document.getElementById('numDotChange').value = settings.numDotChange;
+
         }
-        document.getElementById('multFactor').value = settings.multFactor;
-        document.getElementById('multFactorChange').value = settings.multFactorChange;
-        document.getElementById('numDots').value = settings.numDots;
-        document.getElementById('numDotChange').value = settings.numDotChange;
 
-        // Change the values of elements only when the input box loses focus
-        for (setting in settings) {
-            document.getElementById(setting).addEventListener(
-                'blur',
-                function() {
-                    var setting = this.id;
-                    var newValue = this.value;
+        function startAnimation() {
+            timerId = window.setInterval(updateStrings, 250);
 
-                    if (setting.substring(0, 6) == 'numDot') {
-                        newValue = parseInt(newValue);
-                    }
-                    else {
-                        newValue = parseFloat(newValue);
-                    }
+            var button = document.getElementById('startPause');
+            button.removeEventListener('click', startAnimation);
+            button.addEventListener('click', pauseAnimation);
+            button.value = 'Pause';
+        }
 
-                    if (newValue != NaN) {
-                        settings[setting] = newValue;
-                        drawAll();
-                    }
-                }
-            );
+        function pauseAnimation() {
+            window.clearInterval(timerId);
+
+            var button = document.getElementById('startPause');
+            button.removeEventListener('click', pauseAnimation);
+            button.addEventListener('click', startAnimation);
+            button.value = 'Start';
         }
 
         function drawCircle() {
@@ -126,17 +130,51 @@
                 return;
             }
 
-            drawAll();
-
             settings.multFactor += settings.multFactorChange;
             document.getElementById('multFactor').value = settings.multFactor;
 
             settings.numDots += settings.numDotChange;
             document.getElementById('numDots').value = settings.numDots;
+
+            drawAll();
         }
 
+        // initialize settings in the code and in the HTML input elements
+        resetSettings();
+
+        // Update settings when their corresponding input box changes
+        for (setting in settings) {
+            document.getElementById(setting).addEventListener(
+                'change',
+                function() {
+                    var setting = this.id;
+                    var newValue = this.value;
+
+                    if (setting.substring(0, 6) == 'numDot') {
+                        newValue = parseInt(newValue);
+                    }
+                    else {
+                        newValue = parseFloat(newValue);
+                    }
+
+                    if (newValue != NaN) {
+                        settings[setting] = newValue;
+                        drawAll();
+                    }
+                }
+            );
+        }
+
+        document.getElementById('reset').addEventListener(
+            'click',
+            function() {
+                resetSettings();
+                drawAll();
+            }
+        );
+        document.getElementById('startPause').addEventListener('click', startAnimation);
+
         drawAll();
-        window.setInterval(updateStrings, 250);
     </script>
 </body>
 
