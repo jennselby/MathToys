@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+</head>
+
+<body>
+    <canvas id='strings' width='750px' height='650px'></canvas>
+    <div style="float: right">
+        <label for='modulus'>Modulus</label>
+        <input type='number' id='modulus'>
+        <label for='modulusChange'>Change By</label>
+        <input type='number' id='modulusChange'>
+    </div>
+
+    <script>
+        var TRI_SIDE = 45;
+        var TRI_HALF_SIDE = TRI_SIDE/2;
+        var TRI_HEIGHT = TRI_HALF_SIDE * Math.sqrt(3);
+
+        var NUM_ROWS = 16;
+
+        // colors from figure 4 of
+        // https://eleanormaclure.files.wordpress.com/2011/03/colour-coding.pdf
+        var COLORS = [
+            'white',
+            'red', 'orange', 'yellow', 'lime', 'gray',
+            'pink', 'wheat', 'gold', 'chartreuse', 'springgreen',
+            'aqua', 'powderblue', 'plum', 'green', 'turquoise',
+            'blue', 'purple', 'maroon', 'brown', 'khaki',
+            'olive', 'forestgreen', 'teal', 'navy', 'indigo',
+        ];
+
+        var canvas = document.getElementById('strings');
+        var context = canvas.getContext('2d');
+        context.font = '10pt Sans-Serif';
+        context.textAlign = 'center';
+
+        var CENTER_X = canvas.width/2;
+
+        var settings = {
+            modulus: 2,
+            modulusChange: 0,
+        }
+
+        var numbers = [[1],[1,1]];
+
+        document.getElementById('modulus').value = settings.modulus;
+        document.getElementById('modulusChange').value = settings.modulusChange;
+
+        function restrictModulus(modulus) {
+            return Math.max(2, Math.min(modulus, COLORS.length));
+        }
+
+        // Change the values of elements only when the input box loses focus
+        for (setting in settings) {
+            document.getElementById(setting).addEventListener(
+                'blur',
+                function() {
+                    var setting = this.id;
+                    var newValue = parseInt(this.value);
+                    if (newValue != NaN) {
+                        settings[setting] = newValue;
+                        settings.modulus = restrictModulus(settings.modulus);
+                        drawAll();
+                    }
+                }
+            );
+        }
+
+        function findNumbers() {
+            for (var rowIndex = 2; rowIndex < NUM_ROWS; ++rowIndex) {
+                var previousRow = numbers[rowIndex - 1];
+                var numInnerCols = previousRow.length - 1;
+
+                var newRow = [1];
+                for (var colIndex = 0; colIndex < numInnerCols; ++colIndex) {
+                    newRow.push(previousRow[colIndex] + previousRow[colIndex + 1]);
+                }
+                newRow.push(1);
+                numbers.push(newRow);
+            }
+        }
+
+        function drawTriangle(x, y, color) {
+            context.beginPath();
+            context.moveTo(x - TRI_HALF_SIDE, y);
+            context.lineTo(x + TRI_HALF_SIDE, y);
+            context.lineTo(x, y + TRI_HEIGHT);
+            context.lineTo(x - TRI_HALF_SIDE, y);
+            context.fillStyle = color;
+            context.fill();
+        }
+
+        function findX(colIndex, numCols) {
+            return CENTER_X - (TRI_SIDE * numCols / 2) + TRI_SIDE * colIndex + TRI_HALF_SIDE;
+        }
+
+        function findY(rowIndex) {
+            return TRI_HEIGHT * (rowIndex + 1);
+        }
+
+        function drawTriangles() {
+            var numRows = numbers.length;
+            for (var rowIndex = 0; rowIndex < numRows; ++rowIndex) {
+                var row = numbers[rowIndex];
+                var numCols = row.length;
+
+                for (var colIndex = 0; colIndex < numCols; ++colIndex) {
+                    var numVal = row[colIndex];
+                    var x = findX(colIndex, numCols);
+                    var y = findY(rowIndex);
+                    var color = COLORS[numVal % settings.modulus];
+
+                    drawTriangle(x, y - TRI_HALF_SIDE, color);
+
+                    context.fillStyle = 'black';
+                    context.fillText(numVal, x, y);
+                }
+            }
+        }
+
+        function drawAll() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawTriangles();
+        }
+
+        function updateTriangles() {
+            if (settings.modulusChange == 0) {
+                // nothing to do
+                return;
+            }
+
+            settings.modulus = restrictModulus(settings.modulus + settings.modulusChange);
+            document.getElementById('modulus').value = settings.modulus;
+
+            drawAll();
+        }
+
+        findNumbers();
+        drawAll();
+        window.setInterval(updateTriangles, 1000);
+    </script>
+</body>
+
+</html>
